@@ -113,6 +113,8 @@ int main() {
 
               ++n;
             } else {
+              total_error /= n;
+
               if (first) {
                 first = false;
                 best_error = total_error;
