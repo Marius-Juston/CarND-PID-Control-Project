@@ -106,7 +106,13 @@ int main() {
               total_error = 0;
             }
 
-            if (n < reset_n && abs(cte) < 5 ) {
+            bool force_reset = false;
+
+            if (n > start_buffer && (speed < 1 || abs(cte) > 6)) {
+              force_reset = true;
+            }
+
+            if (n < reset_n && !force_reset) {
               if (n > start_buffer) {
                 total_error += pow(cte, 2);
               }
