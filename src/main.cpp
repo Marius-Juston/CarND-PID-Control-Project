@@ -1,4 +1,4 @@
-#include <math.h>
+#include <cmath>
 #include <uWS/uWS.h>
 #include <iostream>
 #include <string>
@@ -17,14 +17,13 @@ double rad2deg(double x) { return x * 180 / pi(); }
 // Checks if the SocketIO event has JSON data.
 // If there is data the JSON object in string format will be returned,
 // else the empty string "" will be returned.
-string hasData(string s) {
+string hasData(const string &s) {
   auto found_null = s.find("null");
-  auto b1 = s.find_first_of("[");
-  auto b2 = s.find_last_of("]");
+  auto b1 = s.find_first_of('[');
+  auto b2 = s.find_last_of(']');
   if (found_null != string::npos) {
     return "";
-  }
-  else if (b1 != string::npos && b2 != string::npos) {
+  } else if (b1 != string::npos && b2 != string::npos) {
     return s.substr(b1, b2 - b1 + 1);
   }
   return "";
@@ -46,7 +45,7 @@ int main() {
     if (length && length > 2 && data[0] == '4' && data[1] == '2') {
       auto s = hasData(string(data).substr(0, length));
 
-      if (s != "") {
+      if (!s.empty()) {
         auto j = json::parse(s);
 
         string event = j[0].get<string>();
