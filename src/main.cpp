@@ -45,6 +45,7 @@ int main() {
   int start_buffer = 10;
   double constants[] = {0.0505, 0.0001, 0.25};
   double dp[] = {0.01, 0.00005, 0.25};
+  double best_constants[3] = {0.0505, 0.0001, 0.25};
   double total_error = 0;
   double best_error = 0;
   double tolerance = 0.01;
@@ -54,7 +55,7 @@ int main() {
 
   pid.Init(0.0505, 0.0001, 0.25);
 
-  h.onMessage([&first, &start_buffer, &pid, &twiddle, &n, &reset_n, &constants, &dp, &total_error, &repeat, &best_error, &tolerance, &constant_index](
+  h.onMessage([&best_constants, &first, &start_buffer, &pid, &twiddle, &n, &reset_n, &constants, &dp, &total_error, &repeat, &best_error, &tolerance, &constant_index](
       uWS::WebSocket<uWS::SERVER> ws,
       char *data,
       size_t length,
@@ -127,11 +128,17 @@ int main() {
               if (first) {
                 first = false;
                 best_error = total_error;
+                best_constants[0] = constants[0];
+                best_constants[1] = constants[1];
+                best_constants[2] = constants[2];
               } else if (repeat) {
                 repeat = false;
                 if (total_error < best_error) {
                   best_error = total_error;
                   dp[constant_index] *= 1.1;
+                  best_constants[0] = constants[0];
+                  best_constants[1] = constants[1];
+                  best_constants[2] = constants[2];
                 } else {
                   constants[constant_index] += dp[constant_index];
                   dp[constant_index] *= 0.9;
@@ -142,6 +149,9 @@ int main() {
                 if (total_error < best_error) {
                   best_error = total_error;
                   dp[constant_index] *= 1.1;
+                  best_constants[0] = constants[0];
+                  best_constants[1] = constants[1];
+                  best_constants[2] = constants[2];
 
                   constant_index = (constant_index + 1) % 3;
                 } else {
@@ -164,6 +174,9 @@ int main() {
                       << " Kp: " << constants[0]
                       << ", Ki: " << constants[1]
                       << ", Kd: " << constants[2]
+                      << " Best Kp: " << best_constants[0]
+                      << ", Best Ki: " << best_constants[1]
+                      << ", Best Kd: " << best_constants[2]
                       << std::endl;
 
           } else {
