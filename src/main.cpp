@@ -42,8 +42,7 @@ int main() {
   bool twiddle = true;
   int n = 0;
   int reset_n = 230;
-  int start_buffer = 5;
-
+  int start_buffer = 10;
   double constants[] = {0.0505, 0.0001, 0.25};
   double dp[] = {0.01, 0.00005, 0.25};
   double total_error = 0;
