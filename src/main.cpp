@@ -92,6 +92,10 @@ int main() {
             }
 
             if (n == 0) {
+              if(first){
+                reset(ws);
+              }
+
               std::cout << "New Initialization" << std::endl;
 
               if (!first && !repeat) {
