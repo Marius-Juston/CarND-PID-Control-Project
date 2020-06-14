@@ -46,7 +46,7 @@ int main() {
   double constants[] = {0.0505, 0.0001, 0.25};
   double dp[] = {0.01, 0.00005, 0.25};
   double total_error = 0;
-  double best_error;
+  double best_error = 0;
   double tolerance = 0.01;
   int constant_index = 0;
   bool first = true;
@@ -91,7 +91,7 @@ int main() {
             }
 
             if (n == 0) {
-              if(first){
+              if (first) {
                 reset(ws);
               }
 
