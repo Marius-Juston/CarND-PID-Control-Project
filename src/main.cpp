@@ -106,7 +106,7 @@ int main() {
               total_error = 0;
             }
 
-            if (n < reset_n) {
+            if (n < reset_n && abs(cte) < 5 ) {
               if (n > start_buffer) {
                 total_error += pow(cte, 2);
               }
