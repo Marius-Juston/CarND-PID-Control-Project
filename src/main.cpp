@@ -5,13 +5,15 @@
 #include "json.hpp"
 #include "PID.h"
 
-// for convenience
 using nlohmann::json;
 using std::string;
 
+// for convenience
+void reset(uWS::WebSocket<uWS::SERVER> ws);
 // For converting back and forth between radians and degrees.
 constexpr double pi() { return M_PI; }
 double deg2rad(double x) { return x * pi() / 180; }
+
 double rad2deg(double x) { return x * 180 / pi(); }
 
 // Checks if the SocketIO event has JSON data.
@@ -37,10 +39,27 @@ int main() {
    * TODO: Initialize the pid variable.
    */
 
+  bool twiddle = true;
+  int n = 0;
+  int reset_n = 150;
+  int start_buffer = 5;
+
+  double constants[] = {0.0505, 0.0001, 0.25};
+  double dp[] = {0.01, 0.00005, 0.25};
+  double total_error = 0;
+  double best_error;
+  double tolerance = 0.01;
+  int constant_index = 0;
+  bool first = true;
+  bool repeat = false;
+
   pid.Init(0.0505, 0.0001, 0.25);
 
-  h.onMessage([&pid](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
-                     uWS::OpCode opCode) {
+  h.onMessage([&first, &start_buffer, &pid, &twiddle, &n, &reset_n, &constants, &dp, &total_error, &repeat, &best_error, &tolerance, &constant_index](
+      uWS::WebSocket<uWS::SERVER> ws,
+      char *data,
+      size_t length,
+      uWS::OpCode opCode) {
     // "42" at the start of the message means there's a websocket message event.
     // The 4 signifies a websocket message
     // The 2 signifies a websocket event
@@ -57,22 +76,81 @@ int main() {
           double cte = std::stod(j[1]["cte"].get<string>());
           double speed = std::stod(j[1]["speed"].get<string>());
           double angle = std::stod(j[1]["steering_angle"].get<string>());
-          double steer_value;
+          double steer_value = 0;
           /**
            * TODO: Calculate steering value here, remember the steering value is
            *   [-1, 1].
            * NOTE: Feel free to play around with the throttle and speed.
            *   Maybe use another PID controller to control the speed!
            */
-          pid.UpdateError(cte);
+          if (twiddle) {
+            if ((dp[0] + dp[1] + dp[2]) < tolerance) {
+              std::cout << "Final constants: Kp: " << constants[0] << ", Ki: " << constants[1] << ", Kd: "
+                        << constants[2] << std::endl;
 
-          steer_value = pid.TotalError();
-          if (steer_value > 1.) {
-            steer_value = 1.;
-          } else if (steer_value < -1.) {
-            steer_value = -1.;
+              return 0;
+            }
+
+            if (n == 0) {
+              std::cout << "New Initialization" << std::endl;
+
+              if (!first && !repeat) {
+                constants[constant_index] += dp[constant_index];
+              }
+
+              pid.Init(constants[0], constants[1], constants[2]);
+              total_error = 0;
+            }
+
+            if (n < reset_n) {
+              if (n < start_buffer) {
+                total_error += pow(cte, 2);
+              }
+
+              ++n;
+            } else {
+              if (first) {
+                first = false;
+                best_error = total_error;
+              } else if (repeat) {
+                repeat = false;
+                if (total_error < best_error) {
+                  best_error = total_error;
+                  dp[constant_index] *= 1.1;
+                } else {
+                  constants[constant_index] += dp[constant_index];
+                  dp[constant_index] *= 0.9;
+                }
+
+                constant_index = (constant_index + 1) % 3;
+              } else {
+                if (total_error < best_error) {
+                  best_error = total_error;
+                  dp[constant_index] *= 1.1;
+
+                  constant_index = (constant_index + 1) % 3;
+                } else {
+                  constants[constant_index] -= 2 * dp[constant_index];
+                  repeat = true;
+                }
+              }
+
+              n = 0;
+              total_error = 0;
+              reset(ws);
+            }
+            pid.UpdateError(cte);
+            steer_value = pid.TotalError();
+
+            std::cout << total_error << " N: " << n << " Kp: " << constants[0] << ", Ki: " << constants[1] << ", Kd: "
+                      << constants[2] << std::endl;
+
+          } else {
+
+            pid.UpdateError(cte);
+
+            steer_value = pid.TotalError();
           }
-
           // DEBUG
           std::cout << "CTE: " << cte << " Steering Value: " << steer_value
                     << std::endl;
@@ -111,4 +189,8 @@ int main() {
   }
 
   h.run();
+}
+void reset(uWS::WebSocket<uWS::SERVER> ws) {
+  string msg = "42[\"reset\",{}]";
+  ws.send(msg.data());
 }
