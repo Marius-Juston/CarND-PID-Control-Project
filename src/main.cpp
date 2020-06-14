@@ -119,7 +119,11 @@ int main() {
 
               ++n;
             } else {
-              total_error /= n;
+              if (n < reset_n / 2. && force_reset) {
+                total_error = best_error * 2;
+              } else {
+                total_error /= (n - start_buffer);
+              }
 
               if (first) {
                 first = false;
