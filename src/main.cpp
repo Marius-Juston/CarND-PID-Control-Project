@@ -148,8 +148,14 @@ int main() {
             pid.UpdateError(cte);
             steer_value = pid.TotalError();
 
-            std::cout << total_error << " N: " << n << " Kp: " << constants[0] << ", Ki: " << constants[1] << ", Kd: "
-                      << constants[2] << std::endl;
+            std::cout << "N: " << n
+                      << " Total Error: " << total_error
+                      << " Current Average: " << total_error / (n - start_buffer)
+                      << " Current Best: " << best_error
+                      << " Kp: " << constants[0]
+                      << ", Ki: " << constants[1]
+                      << ", Kd: " << constants[2]
+                      << std::endl;
 
           } else {
 
