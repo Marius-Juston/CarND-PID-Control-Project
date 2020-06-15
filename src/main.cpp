@@ -47,7 +47,7 @@ int main() {
   double dp[] = {0.01, 0.00005, 0.25};
   double best_constants[3] = {0.0505, 0.0001, 0.25};
   double total_error = 0;
-  double best_error = 0;
+  double best_error = std::numeric_limits<double>::infinity();
   double tolerance = 0.01;
   int constant_index = 0;
   bool first = true;
