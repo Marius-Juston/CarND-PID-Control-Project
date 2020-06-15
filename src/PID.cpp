@@ -1,8 +1,12 @@
 #include "PID.h"
+#include <iostream>
 
 /**
  * TODO: Complete the PID class. You may add any additional desired functions.
  */
+
+using std::cout;
+using std::endl;
 
 PID::PID() {}
 
@@ -34,5 +38,6 @@ double PID::TotalError() {
   /**
    * TODO: Calculate and return the total error
    */
+  std::cout << p_error << '\t' << d_error << '\t' << i_error << std::endl;
   return -Kp * p_error - Kd * d_error - Ki * i_error;  // TODO: Add your total error calc here!
 }
