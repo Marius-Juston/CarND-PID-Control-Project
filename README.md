@@ -3,6 +3,26 @@ Self-Driving Car Engineer Nanodegree Program
 
 ---
 
+##PID Tuning
+
+In order to get the PID Control relatively tuned I started by manually setting the PID constants so that it could at least go through a single round.
+
+1. I started by tuning the P constant. I tried keeping the value small enough that the car would not be oscillate too much, I tried values in range from (1-0.01), for a throttle of 0.3 I started with 0.5
+2. I then moved on to tuning the D constant. I tried making the D value small enough to make the car oscillate a little less than usual an keep it going to be constant I tried from (3-0.5), for a throttle of 0.3, 1.3 seemed to work relatively fine.
+3. I then moved to the I constant. Because the P and D values kept on oscillating due to systematic error I had to give a very small integral error, because it is the integration of squared error, the I constant had to be very small. I tried from (0.0005-0.00001), for a throttle of 0.3, 0.0003 seemed to work well
+
+After manually tuning the PID loop I implemented a twiddle algorithm on the constants, the twiddle algorithm would be repeating and based on the total average error of the system. However, due to fact that sometimes the constants would cause the system to fail and run off track I needed to implement some fail safes:
+1. After a certain buffer steps:
+   * If the CTE was > 6, then the car was assumed off track
+   * If the car had a speed less than 1, then it was assumed stuck
+2. If the car had triggered one of these fail safes and the car did not travel half of the reset distance the constants were deemed unusable and thus the error was set to be very large  
+3. The average error was used to tune the constants.
+4. I thus ran the twiddle algorithm on these initally tuned values and after many iterations this is what I got:
+   * For throttle 0.3:
+     * `kP: 0.273843, kI: 0.000953428, kD: 2.01178` 
+   * For throttle 0.5:
+     * `kP: 0.27, kI: 0.00100126, kD: 2.91178`
+
 ## Dependencies
 
 * cmake >= 3.5
