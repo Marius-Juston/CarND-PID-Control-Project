@@ -43,9 +43,9 @@ int main() {
   int n = 0;
   int reset_n = 230;
   int start_buffer = 10;
-  double constants[] = {0.0505, 0.0001, 0.25};
+  double constants[] = {0.06, 0.00031, 1.29};
   double dp[] = {0.01, 0.00005, 0.25};
-  double best_constants[3] = {0.0505, 0.0001, 0.25};
+  double best_constants[3] = {0.01, 0.0001, 1};
   double total_error = 0;
   double best_error = std::numeric_limits<double>::infinity();
   double tolerance = 0.01;
@@ -53,7 +53,13 @@ int main() {
   bool first = true;
   bool repeat = false;
 
-  pid.Init(0.0505, 0.0001, 0.25);
+  //   Best at Throttle 0.3
+//   pid.Init(0.273843, 0.000953428, 2.01178);
+  //   Best at Throttle 0.5
+  pid.Init(0.27, 0.00100126, 2.91178);
+//     pid.Init(0.27, 0.00100126, 3.51178);
+
+//  pid.Init(0.0505, 0.0001, 0.25);
 
   h.onMessage([&best_constants, &first, &start_buffer, &pid, &twiddle, &n, &reset_n, &constants, &dp, &total_error, &repeat, &best_error, &tolerance, &constant_index](
       uWS::WebSocket<uWS::SERVER> ws,
